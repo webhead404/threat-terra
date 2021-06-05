@@ -5,7 +5,7 @@
 #  Instead, create a terrform.tfvars file to override them.
 
 variable "esxi_hostname" {
-  default = "x.x.x.x"
+  default = ""
 }
 
 variable "esxi_hostport" {
@@ -13,14 +13,14 @@ variable "esxi_hostport" {
 }
 
 variable "esxi_username" {
-  default = "user"
+  default = "root"
 }
 
 variable "esxi_password" { # Unspecified will prompt
 }
 
 variable "esxi_datastore" {
-  default = "datastore-name"
+  default = "datastore1"
 }
 
 variable "vm_network" {
