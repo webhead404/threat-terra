@@ -21,7 +21,7 @@ All of the previous prerequisites are still required. You will still need Ansibl
 
 Depending on your network connection it could take awhile to build the VM's. 
 
-8. Use Terraform to provision the Packer VM's for deployment and make sure OVFTool is installed and in your $PATH. Add a .tfvars file for your ESXi environment, and run `terraform init` followed by `terraform apply` inside the ESXi folder. 
+8. Use Terraform to provision the Packer VM's for deployment and make sure OVFTool is installed and in your $PATH. Change the variables.tfvars file that has been provided to match your ESXi environment, and run `terraform init` followed by `terraform apply` inside the ESXi folder. 
 
 I recommend snapshotting the newly provisioned VM's before running Ansible against them that way if something doesn't work correctly you can debug it easier.
 
