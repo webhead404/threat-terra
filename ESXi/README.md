@@ -15,6 +15,8 @@ Depending on your network connection it could take awhile to build the VM's.
 
 I recommend snapshotting the newly provisioned VM's before running Ansible against them that way if something doesn't work correctly you can debug it easier.
 
+Additionally, check that your VM's second NIC (HostOnly) is set to the right port group on all VMs. In the past I have had to disconnect/reconnect the interface on each. Normally, the NIC is disabled on a VM until customization completes, so if something prevents it from completing, the NIC will remain disabled. This is part of the design on vSphere so that a VM will not have network access until the necessary attributes have been updated. Currently there is an issue with the remote-exec provisioner but the build will still have all the VM's as needed. Until then, further troubleshooting will be done until this is fixed. 
+
 4. The VM's should be provisioned and now it is time to run Ansible against them! Windows10 will not be provisioned without PyWinRM so make sure you have downloaded and installed that as well. Change the `inventory.yml` file with your VM IP addresses and run `ansible-playbook -v terrastation.yml`
 
 Sometimes the playbook can fail on the Windows tasks and have found that running this can help in those cases: 
