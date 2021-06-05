@@ -6,7 +6,7 @@ All of the previous prerequisites are still required. You will still need Ansibl
 
 2. Create a HostOnly portgroup and VSwitch within ESXi. 
 
-3. SSH to your ESXi host as root and run esxcli system settings advanced set -o /Net/GuestIPHack -i 1. This allows Packer to infer the guest IP from ESXi, without the VM needing to report it itself.
+3. SSH to your ESXi host as root and run `esxcli system settings advanced set -o /Net/GuestIPHack -i 1`. This allows Packer to infer the guest IP from ESXi, without the VM needing to report it itself.
 
 4. Download and install the OVFTool for your OS and make sure it is in your path. https://code.vmware.com/web/tool/4.4.0/ovf
 
