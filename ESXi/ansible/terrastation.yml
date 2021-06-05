@@ -1,0 +1,19 @@
+---
+- hosts: ts-elastomic
+  roles:
+    - elastomic
+  environment:
+    KIBANA_AUTH: vagrant:vagrant
+  tags: elastomic
+
+- hosts: ts-centos7
+  roles:
+    - centos
+  environment:
+    KIBANA_AUTH: vagrant:vagrant
+  tags: centos
+
+- hosts: ts-windows10
+  roles:
+    - windows10
+  tags: windows10

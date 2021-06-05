@@ -1,0 +1,23 @@
+---
+
+ts-elastomic:
+  hosts:
+    x.x.x.x:
+      ansible_user: vagrant
+      ansible_password: vagrant
+      ansible_port: 22
+      ansible_connection: ssh
+      ansible_ssh_common_args: '-o UserKnownHostsFile=/dev/null'
+
+ts-centos7:
+  hosts:
+    x.x.x.x:
+      ansible_user: vagrant
+      ansible_password: vagrant
+      ansible_port: 22
+      ansible_connection: ssh
+      ansible_ssh_common_args: '-o UserKnownHostsFile=/dev/null'
+
+ts-windows10:
+  hosts:
+    x.x.x.x:

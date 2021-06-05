@@ -1,0 +1,42 @@
+---
+
+- name: Set hostname to ts-centos7
+  hostname:
+    name: ts-centos7
+  become: yes
+
+- name: Create a directory if it does not exist
+  file:
+    path: /vagrant
+    state: directory
+    mode: '0755'
+  become: yes
+
+- name: Copy vagrant resources
+  synchronize:
+    src: ./files/
+    dest: /vagrant/scripts/
+  become: yes
+
+- name: Copy the interface file over as root
+  shell: "mv /vagrant/scripts/ifcfg-ens33 /etc/sysconfig/network-scripts/"
+  become: yes
+
+- name: Restart NetworkManager for the new interface
+  shell: systemctl restart NetworkManager
+  become: yes
+
+- name: Bring up the HostOnly interface
+  shell: ifup ens33
+  become: yes
+
+- name: Setup Auditbeat
+  command: bash /vagrant/scripts/setup-linux-beats.sh
+
+- name: Install Pneuma agent
+  command: bash /vagrant/scripts/download-pneuma-linux.sh
+  become: true
+
+- name: Install Elastic Agent
+  command: bash /vagrant/scripts/install-ea-linux.sh
+

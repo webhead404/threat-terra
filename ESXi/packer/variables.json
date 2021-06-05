@@ -1,0 +1,8 @@
+{
+    "esxi_host": "x.x.x.x",
+    "esxi_datastore": "datastore",
+    "esxi_username": "user",
+    "esxi_password": "password",
+    "esxi_network_with_dhcp_and_internet": "VM Network",
+    "http_server_address": "0.0.0.0"
+}
