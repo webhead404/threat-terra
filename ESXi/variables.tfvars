@@ -1,0 +1,5 @@
+esxi_hostname = "ip-address"
+esxi_password = "password"
+esxi_datastore = "datastore"
+vm_network = "VM Network"
+hostonly_network = "HostOnly Network"
