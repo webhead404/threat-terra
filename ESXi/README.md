@@ -4,7 +4,7 @@ All of the previous prerequisites are still required. You will still need Ansibl
 
 1. Make sure SSH is enabled on ESXi.
 
-2. Create a HostOnly portgroup and VSwitch within ESXi. 
+2. Create a portgroup and VSwitch within ESXi called "HostOnly Network" or something similiar. 
 
 3. SSH to your ESXi host as root and run `esxcli system settings advanced set -o /Net/GuestIPHack -i 1`. This allows Packer to infer the guest IP from ESXi, without the VM needing to report it itself.
 
@@ -26,7 +26,7 @@ Change the variables.tfvars file that has been provided to match your ESXi envir
 
 I recommend snapshotting the newly provisioned VM's before running Ansible against them that way if something doesn't work correctly you can debug it easier.
 
-Additionally, check that your VM's second NIC (HostOnly Network) is set to the right port group on all VMs. In the past I have had to disconnect/reconnect the interface on each. It appears as long as the port group has the word "Network" in it it will work properly. 
+Additionally, check that your VM's second NIC (HostOnly Network by default) is set to the right port group on all VMs. In the past I have had to disconnect/reconnect the interface on each. It appears as long as the port group has the word "Network" in it it will work properly. 
 
 4. The VM's should be provisioned and now it is time to run Ansible against them! Windows10 will not be provisioned without PyWinRM so make sure you have downloaded and installed that as well. Change the `inventory.yml` file with your VM IP addresses and run `ansible-playbook -v terrastation.yml`
 
