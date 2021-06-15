@@ -4,16 +4,16 @@
     - elastomic
   environment:
     KIBANA_AUTH: vagrant:vagrant
-  tags: elastomic
+  tags: ts-elastomic
 
 - hosts: ts-centos7
   roles:
     - centos
   environment:
     KIBANA_AUTH: vagrant:vagrant
-  tags: centos
+  tags: ts-centos7
 
 - hosts: ts-windows10
   roles:
     - windows10
-  tags: windows10
+  tags: ts-windows10
