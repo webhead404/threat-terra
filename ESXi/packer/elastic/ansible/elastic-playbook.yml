@@ -1,0 +1,438 @@
+---
+  - hosts: all
+    become: true
+    gather_facts: false
+    vars:
+      bootstrap_password: "vagrant"
+      vagrant:
+        user: "vagrant"
+        password: "{{ bootstrap_password }}"
+        role: "thremulator"
+      header:
+        content: "{{ 'Content-Type: application/json' }}"
+        kbn: "{{ 'kbn-xsrf: true' }}"
+
+    tasks:
+  
+    - name: Import APT Keys
+      apt_key:
+        state: present
+        url: "{{ item }}"
+      loop:
+        - https://artifacts.elastic.co/GPG-KEY-elasticsearch
+        - https://packages.microsoft.com/keys/microsoft.asc
+
+    - name: Add Elastic Repository
+      apt_repository:
+        repo: deb [arch=amd64] https://artifacts.elastic.co/packages/8.x/apt stable main
+        state: present
+        update_cache: yes
+
+    - name: Add Microsoft Repository
+      apt_repository:
+        repo: deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-debian-bullseye-prod bullseye main
+        state: present
+        update_cache: yes
+
+    - name: Clean Cache
+      command: apt-get clean
+
+    - name: Refresh apt-cache
+      command: apt-get update
+
+    - name: Install System Tools
+      apt:
+        name: "{{ packages }}"
+        state: present
+      vars:
+        packages:
+          - ufw
+          - vim
+          - nano
+          - tmux
+          - git
+          - golang
+          - wget
+          - apt-transport-https
+
+    - name: Prep to start services
+      command: systemctl daemon-reload
+
+    - name: Start Firewalld Service
+      command: systemctl start ufw
+
+###################################
+# Firewall
+###################################
+
+    - name: Add Elasticsearch Firewall Rule
+      ufw:
+        rule: allow
+        port: '9200'
+        proto: tcp
+        state: enabled
+        
+    - name: Add Kibana Firewall Rule
+      ufw:
+        rule: allow
+        port: '5601'
+        proto: tcp
+        state: enabled
+        
+    - name: Add Fleet Server Rule
+      ufw:
+        rule: allow
+        port: '8220'
+        state: enabled
+
+    - name: Add SSH Rule for Vagrant
+      ufw:
+         rule: allow
+         port: '22'
+         proto: tcp
+         state: enabled
+
+
+###################################
+# Elasticstack
+###################################
+
+    - name: Install Elasticsearch
+      apt:
+        name: elasticsearch={{ lab.stack_version }}
+        state: present
+
+    - name: Elasticsearch Vagrant User tasks
+      block:
+
+        #- name: Create the Elasticsearch Keystore
+        #  command: "/usr/share/elasticsearch/bin/elasticsearch-keystore create"
+        #  args:
+        #    creates: "/etc/elasticsearch/elasticsearch.keystore"
+
+        #- name: Check if Bootstrap Password is Set
+        #  command: /usr/share/elasticsearch/bin/elasticsearch-keystore list
+        #  register: list_es_keystore
+        #  changed_when: False
+        #  check_mode: false
+
+        #- name: Set Bootstrap Password
+        #  command: /usr/share/elasticsearch/bin/elasticsearch-keystore add -x bootstrap.password
+        #  when: "'bootstrap.password' not in list_es_keystore.stdout_lines"
+        #  no_log: true
+        #  register: es_keystore
+        #  args:
+        #    stdin: "{{ bootstrap_password | quote }}"
+
+        - name: Create Vagrant Superuser
+          command: "/usr/share/elasticsearch/bin/elasticsearch-users useradd {{ vagrant.user }} -p {{ vagrant.password }} -r {{ vagrant.role }}"
+
+    - name: Create Default Directory
+      file:
+        path: /etc/default
+        state: directory
+
+    - name: Add Elasticsearch Default File
+      copy:
+        src: ./files/elasticsearch
+        dest: /etc/default/elasticsearch
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Create Elasticsearch Service Folder
+      file:
+        path: /etc/systemd/system/elasticsearch.service.d
+        state: directory
+        # owner: vagrant
+        # mode: '0755'
+
+    - name: Add Override Config
+      copy:
+        src: ./files/override.conf
+        dest: /etc/systemd/system/elasticsearch.service.d/override.conf
+        # owner: root
+        # group: root
+        # mode: '0644'
+    
+    - name: Add Limits Config
+      copy:
+        src: ./files/limits.conf
+        dest: /etc/security/limits.conf
+        # owner: root
+        # group: root
+        # mode: '0644'
+
+    #- name: Make Cert Directory
+    #  file:
+    #    path: /etc/elasticsearch/certs
+    #    state: directory
+
+    - name: Confirm Directory Permissions
+      file:
+        path: /etc/elasticsearch
+        state: directory
+        recurse: true
+        owner: elasticsearch
+        group: elasticsearch
+
+    - name: Update Elasticsearch Config
+      copy:
+        src: ./files/elasticsearch.yml
+        dest: /etc/elasticsearch/elasticsearch.yml
+        owner: elasticsearch
+        group: elasticsearch
+        mode: '0660'
+
+
+    #- name: Copy Elasticsearch Cert
+    #  copy:
+    #    src: ./files/elastic.p12
+    #    dest: /etc/elasticsearch/certs
+    #    owner: elasticsearch
+    #    group: elasticsearch
+    #    mode: '0660'
+      #loop: 
+      #  - client.cer
+      #  - client.key
+
+    - name: Start and Enable Elasticsearch
+      systemd: 
+        name: elasticsearch
+        state: started
+        enabled: true
+
+    - name: Reset Elastic password
+      shell: /usr/share/elasticsearch/bin/elasticsearch-reset-password -u elastic -a -b -s
+      register: es_password
+
+    - name: Create a role for Vagrant (since superuser isn't super anymore)
+      #no_log: true
+      uri:
+        url: https://localhost:9200/_security/role/thremulator?pretty
+        validate_certs: false
+        user: elastic
+        password: "{{ es_password.stdout }}"
+        method: POST
+        body: "{{ lookup('file','create_role.json') }}"
+        force_basic_auth: yes
+        body_format: json
+        headers:
+          Content-Type: "application/json" 
+
+    #- name: Create a Tmp directory to drop our token in
+    #  file: 
+    #    path: /tmp/token
+    #    state: directory
+
+    - name: Generate enrollment token for Kibana
+      shell: /usr/share/elasticsearch/bin/elasticsearch-create-enrollment-token -s kibana
+      register: kibana_token
+
+
+
+    - name: Install Kibana
+      apt:
+        name: kibana={{ lab.stack_version }}
+        state: present
+
+
+    - name: Update Kibana Config
+      copy:
+        src: ./files/kibana.yml
+        dest: /etc/kibana/kibana.yml
+        owner: kibana
+        group: kibana
+
+    #- name: Create Kibana Certs Directory
+    #  file:
+    #    path: /etc/kibana/certs
+    #    state: directory
+
+    #- name: Copy Elasticsearch Certs For Kibana
+    #  copy:
+    #    src: ./files/elastic-stack-ca.pem
+    #    dest: /etc/kibana/certs
+    #    owner: kibana
+    #    group: kibana
+      #loop:
+      #  - client.cer
+      #  - client.key
+
+    - name: Confirm Directory Permissions
+      file:
+        path: /etc/kibana
+        state: directory
+        recurse: true
+        owner: kibana
+        group: kibana
+  
+    #- name: Read in the enrollment key
+     # command: cat /tmp/token/enrollment-token
+     # register: kibana_token
+
+    - name: Set Enrollment Key
+      command: /usr/share/kibana/bin/kibana-setup --enrollment-token "{{ kibana_token.stdout }}"
+
+    - name: Start and Enable Kibana
+      systemd: 
+        name: kibana
+        state: started
+        enabled: true
+
+    - name: Copy Saved Objects
+      copy: 
+        src: ./files/export.ndjson
+        dest: /tmp
+
+    
+    #- name: Test Kibana
+      #uri:
+        #url: http://127.0.0.1:5601/login
+        #method: GET
+        #headers:
+          #Content-Type: application/json
+          #kbn-xsrf: true
+       
+
+    #- name: Upload a file via multipart/form-multipart
+      #uri:
+       # url: http://127.0.0.1:5601/api/saved_objects/_import?overwrite=true
+      #  method: POST
+      #  headers:
+      #    Content-Type: application/ndjson
+      #    kbn-xsrf: true
+       # user: vagrant
+       # password: vagrant
+       # body_format: form-multipart
+       # body:
+       #   filename: /tmp/export.ndjson
+      #    mime_type: application/octet-stream
+      #uri:
+        #url: http://127.0.0.1:5601/api/saved_objects/_import?overwrite=true
+        #method: GET
+        #src: /tmp/export.ndjson
+          #mime_type: application/json
+        #headers:
+          #Content-Type: application/ndjson
+         # kbn-xsrf: true
+        #user: vagrant
+        #password: vagrant
+        #validate_certs: false
+        #remote_src: yes
+
+###################################
+# SIEM Rules
+# This section needs love / currently working 
+# as a small bash script called in Vagrantfile
+###################################
+
+    # - name: Create Detection Engine Index
+    #   uri:
+    #     url: http://192.168.56.10:5601/api/detection_engine/index
+    #     method: POST
+    #     status_code: 200
+    #     user: "{{ vagrant.user }}"
+    #     password: "{{ bootstrap_password }}"
+    #     validate_certs: false
+    #     force_basic_auth: true
+
+    # - name: Put Prepackaged Rules
+    #   uri:
+    #     url: http://192.168.56.10:5601/api/detection_engine/rules/prepackaged
+    #     method: PUT
+    #     body_format: json
+    #     body: >
+    #       {
+    #         "password": "{{ bootstrap_password }}"
+    #       }
+    #     status_code: 200
+    #     user: "{{ vagrant.user }}"
+    #     password: "{{ bootstrap_password }}"
+    #     validate_certs: false
+    #     force_basic_auth: true
+
+
+###################################
+# Powershell
+###################################
+
+    - name: Install Powershell
+      apt:
+        name: powershell
+        state: present
+
+    - name: Enable Powershell Remoting
+      command: pwsh -Command {Enable-PSRemoting -Force}
+
+
+###################################
+# SSH Configuration
+###################################
+
+    - name: Uncomment Pass Auth Yes
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#PasswordAuthentication\s+yes'
+        line: PasswordAuthentication yes
+        owner: root
+        group: root
+        mode: '0600'
+
+    - name: Comment out Passauth No
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^PasswordAuthentication\s+no'
+        line: '# PasswordAuthentication no'
+        owner: root
+        group: root
+        mode: '0600'
+
+    - name: Allow SSH Pubkey Auth
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#PubkeyAuthentication\s+yes'
+        line: 'PubkeyAuthentication yes'
+        owner: root
+        group: root
+        mode: '0600'
+
+    - name: Add PS Subsystem to PS remote over SSH
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        line: 'Subsystem powershell /usr/bin/pwsh -sshs -NoLogo'
+        create: true
+        owner: root
+        group: root
+        mode: '0600'
+
+    - name: Create Vagrant User SSH Directory
+      file:
+        path: /home/vagrant/.ssh
+        state: directory
+        owner: vagrant
+        mode: '0700'
+
+    - name: Retrieve Default Vagrant Pub Key
+      command: wget --no-check-certificate https://raw.github.com/mitchellh/vagrant/master/keys/vagrant.pub -O /home/vagrant/.ssh/authorized_keys
+
+    - name: Update Permissions of SSH Key
+      file:
+        path: /home/vagrant/.ssh/authorized_keys
+        state: file
+        owner: vagrant
+        mode: '0600'
+        
+    - name: Add AuthorizedKeysFile to Config
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^AuthorizedKeysFile\s+\.ssh/authorized_keys'
+        line: 'AuthorizedKeysFile %h/.ssh/authorized_keys'
+        owner: root
+        group: root
+        mode: '0600'
+
+    - name: Restart sshd service
+      systemd:
+        name: sshd
+        state: restarted

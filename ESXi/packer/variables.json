@@ -1,8 +1,13 @@
 {
     "esxi_host": "x.x.x.x",
-    "esxi_datastore": "datastore",
-    "esxi_username": "user",
-    "esxi_password": "password",
-    "esxi_network_with_dhcp_and_internet": "VM Network",
-    "http_server_address": "0.0.0.0"
+    "esxi_datastore": "datastore1",
+    "esxi_username": "",
+    "esxi_password": "",
+    "esxi_network_with_dhcp_and_internet": "",
+    "http_server_address": "x.x.x.x",
+    "elastic_host_address": "x.x.x.x",
+    "debian11_host_address": "x.x.x.x",
+    "windows10_host_address": "x.x.x.x",
+    "windows10_host_gateway": "x.x.x.x",
+    "redops_host_address": "x.x.x.x"
 }

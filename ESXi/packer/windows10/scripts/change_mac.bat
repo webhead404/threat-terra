@@ -1,0 +1,1 @@
+reg add “HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Class\{4D36E972-E325-11CE-BFC1-08002BE10318}\0000” /v NetworkAddress /d 0050560A2B1C2 /f

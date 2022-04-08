@@ -4,8 +4,8 @@
     "esxi_host": "",
     "esxi_username": "",
     "esxi_password": "",
-    "iso_checksum": "sha256:ab4862ba7d1644c27f27516d24cb21e6b39234eb3301e5f1fb365a78b22f79b3",
-    "iso_url": "https://software-download.microsoft.com/download/pr/18362.30.190401-1528.19h1_release_svc_refresh_CLIENTENTERPRISEEVAL_OEMRET_x64FRE_en-us.iso",
+    "iso_checksum": "sha256:F1A4F2176259167CD2C8BF83F3F5A4039753B6CC28C35AC624DA95A36E9620FC",
+    "iso_url": "https://software-download.microsoft.com/download/pr/19041.264.200511-0456.vb_release_svc_refresh_CLIENTENTERPRISEEVAL_OEMRET_x64FRE_en-us.iso",
     "autounattend": "Autounattend.xml"
   },
 
@@ -36,11 +36,12 @@
       "remote_type": "esx5",
       "type": "vmware-iso",
       "version": 11,
-      "vm_name": "Windows10_Packer",
+      "vm_name": "Windows10-Threm-Packer",
       "vnc_port_min": 5900,
       "vnc_port_max": 5980,
       "vmx_data": {
         "ethernet0.networkName": "{{user `esxi_network_with_dhcp_and_internet`}}",
+        "ethernet0.address": "00:50:56:a2:b1:c2",
         "memsize": "2048",
         "numvcpus": "2",
         "scsi0.virtualDev": "lsisas1068",
@@ -67,6 +68,7 @@
         "./scripts/disable-autologin.ps1",
         "./scripts/disable-uac.ps1",
         "./scripts/no-expiration.ps1",
+	"./scripts/install-openjdk.ps1",
         "./scripts/install-choco.ps1",
         "./scripts/install-sysmon.ps1",
         "./scripts/install-pwshssh.ps1",
@@ -74,7 +76,8 @@
         "./scripts/disable-windef.ps1",
         "./scripts/fix-invokeweb-secure-channel.ps1",
         "./scripts/install-shutup10.ps1",
-        "./scripts/cleanout.ps1"
+        "./scripts/cleanout.ps1",
+	"./scripts/debloater.ps1"
       ],
       "type": "powershell"
     },
@@ -84,7 +87,12 @@
       "type": "windows-restart"
     },
     {
+      "environment_vars": [
+         "PRIMARY_INTERFACE={{user `windows10_host_address`}}",
+         "PRIMARY_INTERFACE_GATEWAY={{user `windows10_host_gateway`}}" 
+      ],
       "scripts": [
+        "./scripts/setup_interface.ps1",
         "./scripts/cleanup.ps1"
       ],
       "type": "powershell"
