@@ -20,7 +20,7 @@ Copy-Item "$scripts_dir\startup.cmd" "$vagrant_startup"
 If (Test-Path $install_dir\pneuma-windows.exe) 
 {
     Write-Output "Pneuma found in install directory! Starting Pneuma with default parameters..."
-    Start-Process -FilePath "C:\Pneuma\pneuma-windows.exe" -ArgumentList "-address 192.168.56.73:2323 -contact tcp -name pneuma-window -range thremulation"
+    Start-Process -FilePath "C:\Pneuma\pneuma-windows.exe" -ArgumentList "-address 192.168.56.13:2323 -contact tcp -name pneuma-window -range thremulation"
 }
 
 Write-Output "Pneuma is installed successfully! IMPORTANT: Since the agent runs in userspace you will have to establish a session to this VM for Pneuma to start again."
