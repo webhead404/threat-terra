@@ -1,4 +1,4 @@
-## ThremulationStation can be installed within ESXi by using Packer and Terraform. This method requires some extra setup and other tooling will also be needed. This still a huge work in progress with a fair amount of changes needing to be made. If something doesn't work, feel free to file an issue! (Viewer discretion is advised.) ##
+## ThremulationStation can be installed within ESXi by using Packer and Terraform. This method requires some extra setup and other tooling will also be needed. This still a huge work in progress with a fair amount of changes needing to be made. If something doesn't work, feel free to file an issue! (YMMV) ##
 
 All of the previous prerequisites are still required. You will still need Ansible and Git and will need to additionally install Packer, PyWinRM, OVFTool from VMWare and Terraform.
 
