@@ -1,7 +1,8 @@
 ---
 
 - name: Set Hostfile
-  command: printf "'\n127.0.0.1  ts-debian' >> /etc/hosts"
+  command: printf "'\n127.0.0.1  ts-debian11' >> /etc/hosts"
+  become: yes
 
 - name: Set hostname to ts-debian11
   hostname:
