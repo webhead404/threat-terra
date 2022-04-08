@@ -1,0 +1,37 @@
+---
+
+- name: Set Entry in Hostfile
+  command: printf "'\n127.0.0.1  redops' >> /etc/hosts"
+
+- name: Set hostname to ts-redops
+  hostname:
+    name: ts-redops
+  become: yes
+
+- name: Create a directory if it does not exist
+  file:
+    path: /vagrant
+    state: directory
+    mode: '0755'
+  become: yes
+
+- name: Copy vagrant scripts
+  synchronize:
+    src: ./files/scripts
+    dest: /vagrant/
+  become: yes
+
+- name: Copy vagrant resources
+  synchronize:
+    src: ./files/resources
+    dest: /vagrant/
+  become: yes
+
+
+- name: Setup Second Interface
+  command: bash /vagrant/scripts/setup_interface.sh
+  become: yes
+
+- name: Install Operator
+  command: bash /vagrant/scripts/install-operator.sh
+  become: yes

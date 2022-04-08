@@ -10,35 +10,41 @@
   when: res.reboot_required
 
 - name: Set HostOnly IP Address
-  win_shell: "If (-not(get-netipaddress | where {$_.IPAddress -eq '192.168.33.11'})) {$adapter = (get-netadapter | where {$_.MacAddress -eq '00-50-56-A2-B1-C4'}).Name; New-NetIPAddress –InterfaceAlias $adapter –AddressFamily IPv4 -IPAddress 192.168.33.11 –PrefixLength 24 -DefaultGateway 192.168.33.1 } Else { Write-Host 'IP Address Already Created.' }"
+  win_shell: "If (-not(get-netipaddress | where {$_.IPAddress -eq '192.168.56.11'})) {$adapter = (get-netadapter | where {$_.MacAddress -eq '00-50-56-A2-B1-C4'}).Name; New-NetIPAddress -InterfaceAlias $adapter -AddressFamily IPv4 -IPAddress 192.168.56.11 -PrefixLength 24 -DefaultGateway 192.168.56.1 } Else { Write-Host 'IP Address Already Created.' }"
 
-- name: Copy vagrant files to ts-windows
-  ansible.windows.win_copy:
-    src: ./files/
-    dest: c:\vagrant\scripts
+
+- name: Copy vagrant scripts to ts-windows
+  win_copy:
+    src: ./files/scripts
+    dest: c:\vagrant\
+
+- name: Copy vagrant resources to ts-windows
+  win_copy:
+    src: ./files/resources
+    dest: c:\vagrant\
 
 - name: Fix Windows Expiration
-  win_shell: ".\\fix-windows-expiration.ps1"
+  win_shell: .\\fix-windows-expiration.ps1
   args:
-    chdir: 'c:\vagrant\scripts'
+    chdir: c:\vagrant\scripts
   register: fix_windows_expiration
   failed_when: "'Exception' in fix_windows_expiration"
 
 - debug: msg="{{ fix_windows_expiration.stdout_lines }}"
   
 - name: Run ShutUpWin10
-  win_shell: ".\\install-shutup10config.ps1"
+  win_shell: .\\install-shutup10config.ps1
   args:
-    chdir: 'c:\vagrant\scripts'
+    chdir: c:\vagrant\scripts
   register: run_shutup_win10
   failed_when: "'Exception' in run_shutup_win10.stdout"
 
 - debug: msg="{{ run_shutup_win10.stdout_lines }}"
 
 - name: Installing Elastic Agent
-  win_shell: ".\\install-ea.ps1"
+  win_shell: .\\install-ea.ps1
   args:
-    chdir: 'c:\vagrant\scripts'
+    chdir: c:\vagrant\scripts
   register: elastic_agent
   failed_when: "'Exception' in elastic_agent.stdout"
 
@@ -47,7 +53,7 @@
 - name: Download and Run Pneuma Agent
   win_shell: ".\\download-pneuma.ps1"
   args:
-    chdir: 'c:\vagrant\scripts'
+    chdir: c:\vagrant\scripts
   register: win_pneuma
   failed_when: "'Exception' in win_pneuma.stdout"
 

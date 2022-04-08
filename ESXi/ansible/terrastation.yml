@@ -1,19 +1,43 @@
 ---
-- hosts: ts-elastomic
+- hosts: ts-elastic
   roles:
-    - elastomic
+    - elastic
   environment:
-    KIBANA_AUTH: vagrant:vagrant
-  tags: ts-elastomic
+    ELASTIC_STACK_VERSION: "8.1.0"
+    KIBANA_URL: "http://192.168.56.10:5601"
+    KIBANA_AUTH: "vagrant:vagrant"
+    ELASTICSEARCH_URL: "https://192.168.56.10:9200"
+    FLEET_SERVER_URL: "https://192.168.56.10:8220"
+  tags: ts-elastic
 
-- hosts: ts-centos7
+- hosts: ts-debian11
   roles:
-    - centos
+    - debian11
   environment:
-    KIBANA_AUTH: vagrant:vagrant
-  tags: ts-centos7
+    ELASTIC_STACK_VERSION: "8.1.0"
+    KIBANA_URL: "http://192.168.56.10:5601"
+    KIBANA_AUTH: "vagrant:vagrant"
+    ELASTICSEARCH_URL: "https://192.168.56.10:9200"
+    FLEET_SERVER_URL: "https://192.168.56.10:8220"
+  tags: ts-debian11
 
 - hosts: ts-windows10
   roles:
     - windows10
+  environment:
+    ELASTIC_STACK_VERSION: "8.1.0"
+    KIBANA_URL: "http://192.168.56.10:5601"
+    KIBANA_AUTH: "vagrant:vagrant"
+    ELASTICSEARCH_URL: "https://192.168.56.10:9200"
+    FLEET_SERVER_URL: "https://192.168.56.10:8220"
   tags: ts-windows10
+
+- hosts: ts-redops
+  roles:
+    - redops
+  tags: ts-redops
+
+- hosts: ts-esxi
+  roles:
+    - esxi
+  tags: ts-esxi

@@ -1,0 +1,48 @@
+---
+
+- name: Set Hostfile
+  command: printf "'\n127.0.0.1  ts-debian' >> /etc/hosts"
+
+- name: Set hostname to ts-debian11
+  hostname:
+    name: ts-debian11
+  become: yes
+
+- name: Create a directory if it does not exist
+  file:
+    path: /vagrant
+    state: directory
+    mode: '0755'
+  become: yes
+
+- name: Copy vagrant resources
+  synchronize:
+    src: ./files/
+    dest: /vagrant/scripts/
+  become: yes
+
+- name: Setup Second Interface
+  command: bash /vagrant/scripts/setup_interface.sh
+  become: yes
+
+- name: Setup Auditbeat
+  command: bash /vagrant/scripts/setup-linux-beats.sh
+
+- name: Install Pneuma agent
+  command: bash /vagrant/scripts/download-pneuma-linux.sh
+  become: true
+
+- name: Install Elastic Agent
+  command: bash /vagrant/scripts/install-ea-linux.sh
+  vars:
+    ELASTIC_STACK_VERSION:
+      - "8.1.0"
+    KIBANA_URL:
+      - "http://192.168.56.10:5601"
+    KIBANA_AUTH:
+      - "vagrant:vagrant"
+    ELASTICSEARCH_URL:
+      - "https://192.168.56.10:9200"
+    FLEET_SERVER_URL:
+      - "https://192.168.56.10:8220"      
+
