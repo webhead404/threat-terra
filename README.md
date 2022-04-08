@@ -25,11 +25,6 @@
 <br>
 Threaterra is based on Thremulation Station which is an approachable small-scale threat emulation and detection range. That leans on Atomic Red Team for emulating threats, and the Elastic Endpoint Agent for detection. ThremulationStation utilizing a bash script called `stationctl` to make standing up the lab easy. Threaterra uses Packer, Terraform and Ansible to deploy ThremulationLab to ESXi. Threaterra will need a rewrite of `stationctl` for Terraform. Additionally Prelude Operator is an option for emulating threats within Threaterra utilizing the Pneuma agent by default. If you are interested in using ESXi, go ahead and navigate to https://github.com/webhead404/threat-terra/tree/main/ESXi and follow the README. Below are a few protips for Operator and Pneuma usage:
 
-- Operator requires X11 forwarding so you will have to have that set up prior to using it. Easy button on macOS is to install `xquartz`.
-
-- You can start Operator by passing operator or /opt/operator/operator to your SSH session like this: `ssh -XC -p 22 vagrant@your-ip /opt/operator/operator`
-
-- Make sure to set your exposed IP in Operator's local settings to 0.0.0.0 by clicking on Settings in Operator. You will not be able to interact with the Pneuma agents until you do this.
 
 -  Since the Pneuma agent runs in userspace on Windows you will have to establish a session to the Windows VM for Pneuma to start again.
 <br>

@@ -1,0 +1,35 @@
+---
+
+- name: Grab ID for ts-elastic
+  shell: |
+    vim-cmd vmsvc/getallvms | awk '$2 == "ts-elastic"' | awk '{print $1}'
+  register: elastic_id
+
+- name: Grab ID for ts-windows10
+  shell: |
+    vim-cmd vmsvc/getallvms | awk '$2 == "ts-windows10"' | awk '{print $1}'
+  register: windows_id
+
+- name: Grab ID for ts-debian11
+  shell: |
+      vim-cmd vmsvc/getallvms | awk '$2 == "ts-debian11"' | awk '{print $1}'
+  register: debian11_id
+
+- name: Grab ID for ts-redops
+  shell: |
+      vim-cmd vmsvc/getallvms | awk '$2 == "ts-redops"' | awk '{print $1}'
+  register: redops_id
+
+
+- name: Snapshotting ts-elastic
+  command: vim-cmd vmsvc/snapshot.create "{{ elastic_id.stdout }}" initial_snapshot
+
+- name: Snapshotting ts-windows10
+  command: vim-cmd vmsvc/snapshot.create "{{ windows_id.stdout }}" initial_snapshot
+
+- name: Snapshotting ts-debian11
+  command: vim-cmd vmsvc/snapshot.create "{{ debian11_id.stdout }}" initial_snapshot
+
+- name: Snapshotting ts-redops
+  command: vim-cmd vmsvc/snapshot.create "{{ redops_id.stdout }}" initial_snapshot
+

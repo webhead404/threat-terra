@@ -1,0 +1,28 @@
+---
+
+- name: Set hostname to ts-elastic
+  hostname:
+    name: ts-elastic
+  become: yes
+
+
+- name: Create a directory if it does not exist
+  file:
+    path: /vagrant/scripts
+    state: directory
+    mode: '0755'
+  become: yes
+
+- name: Copy vagrant resources
+  synchronize:
+    src: ./files/
+    dest: /vagrant/scripts/
+  become: yes
+
+- name: Install Fleet Server
+  command: bash /vagrant/scripts/install-fleet-server.sh
+  become: yes
+
+- name: Run Elastic Setup
+  command: bash /vagrant/scripts/setup-elastic.sh
+  become: yes
