@@ -1,8 +1,5 @@
 Write-Host "Staging Static IP for Ansible"
 
-# Change MacAddress
-#Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Class\{4D36E972-E325-11CE-BFC1-08002BE10318}\0001" -Name 'NetworkAddress' -Value '005056A2B1C2' -Type String 
-
 # Set vars
 $nic_id=((Get-NetAdapter | where {$_.Name -eq 'Ethernet0'}).DeviceID.ToLower())
 $reg_path="HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces\$nic_id"
