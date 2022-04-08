@@ -30,3 +30,7 @@ variable "vm_network" {
 variable "hostonly_network" {
   default = "HostOnly Network"
 }
+
+variable "windows_ip" {
+  default = "192.168.1.71"
+}

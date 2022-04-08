@@ -4,6 +4,20 @@
 #
 #   Use of variables here to hide/move the variables to a separate file
 #
+
+terraform {
+  required_version = ">= 0.13"
+  required_providers {
+    esxi = {
+      source = "registry.terraform.io/josenk/esxi"
+      #
+      # For more information, see the provider source documentation:
+      # https://github.com/josenk/terraform-provider-esxi
+      # https://registry.terraform.io/providers/josenk/esxi
+    }
+  }
+}
+
 provider "esxi" {
   esxi_hostname = var.esxi_hostname
   esxi_hostport = var.esxi_hostport
@@ -14,10 +28,9 @@ provider "esxi" {
 #########################################
 #  ESXI Guest resource
 #########################################
-resource "esxi_guest" "Elastomic_Packer" {
-  guest_name = "ts-elastomic"
+resource "esxi_guest" "Elastic-Threm-Packer" {
+  guest_name = "ts-elastic"
   disk_store = var.esxi_datastore
-  guestos    = "rhel7-64"
 
   boot_disk_type = "thin"
 
@@ -25,7 +38,7 @@ resource "esxi_guest" "Elastomic_Packer" {
   numvcpus           = "2"
   resource_pool_name = "/"
   power              = "on"
-  clone_from_vm = "Elastomic_Packer"
+  clone_from_vm = "Elastic-Threm-Packer"
 
     provisioner "remote-exec" {
     inline = [
@@ -48,7 +61,7 @@ resource "esxi_guest" "Elastomic_Packer" {
     mac_address     = "00:50:56:a3:b1:c2"
     nic_type        = "e1000"
   }
-  # This is the local network that will be used for 192.168.33.x addressing
+  # This is the local network that will be used for 192.168.56.x addressing
   network_interfaces {
     virtual_network = var.hostonly_network
     mac_address     = "00:50:56:a3:b1:c4"
@@ -65,18 +78,17 @@ resource "esxi_guest" "Elastomic_Packer" {
   guest_shutdown_timeout = 30
 }
 
-resource "esxi_guest" "Centos_Packer" {
-  guest_name = "ts-centos7"
+resource "esxi_guest" "Debian11-Threm-Packer" {
+  guest_name = "ts-debian11"
   disk_store = var.esxi_datastore
-  guestos    = "rhel7-64"
 
   boot_disk_type = "thin"
 
-  memsize            = "4096"
-  numvcpus           = "2"
+  memsize            = "1024"
+  numvcpus           = "1"
   resource_pool_name = "/"
   power              = "on"
-  clone_from_vm = "Centos_Packer"
+  clone_from_vm = "Debian11-Threm-Packer"
   # This is the network that bridges your host machine with the ESXi VM
   network_interfaces {
     virtual_network = var.vm_network
@@ -93,10 +105,9 @@ resource "esxi_guest" "Centos_Packer" {
   guest_shutdown_timeout = 30
 }
 
-resource "esxi_guest" "Windows10_Packer" {
-  guest_name = "ts-windows10"
+resource "esxi_guest" "Redops-Threm-Packer" {
+  guest_name = "ts-redops"
   disk_store = var.esxi_datastore
-  guestos    = "windows9-64"
 
   boot_disk_type = "thin"
 
@@ -104,19 +115,51 @@ resource "esxi_guest" "Windows10_Packer" {
   numvcpus           = "2"
   resource_pool_name = "/"
   power              = "on"
-  clone_from_vm = "Windows10_Packer"
+  clone_from_vm = "Redops-Threm-Packer"
+  # This is the network that bridges your host machine with the ESXi VM
+  network_interfaces {
+    virtual_network = var.vm_network
+    mac_address     = "00:50:56:a1:b1:c2"
+    nic_type        = "e1000"
+  }
+  # This is the local network that will be used for 192.168.33.x addressing
+  network_interfaces {
+    virtual_network = var.hostonly_network
+    mac_address     = "00:50:56:a1:b1:c4"
+    nic_type        = "e1000"
+  }
+  guest_startup_timeout  = 45
+  guest_shutdown_timeout = 30
+}
+
+resource "esxi_guest" "Windows10-Threm-Packer" {
+  guest_name = "ts-windows10"
+  disk_store = var.esxi_datastore
+
+  boot_disk_type = "thin"
+
+  memsize            = "2048"
+  numvcpus           = "2"
+  resource_pool_name = "/"
+  power              = "on"
+  clone_from_vm = "Windows10-Threm-Packer"
+  
+
+  # This is the network that bridges your host machine with the ESXi VM
+  network_interfaces {
+    virtual_network = var.hostonly_network
+    mac_address     = "00:50:56:a2:b1:c4"
+    nic_type        = "e1000"
+  }
+ 
+
   # This is the network that bridges your host machine with the ESXi VM
   network_interfaces {
     virtual_network = var.vm_network
     mac_address     = "00:50:56:a2:b1:c2"
     nic_type        = "e1000"
   }
-  # This is the local network that will be used for 192.168.33.x addressing
-  network_interfaces {
-    virtual_network = var.hostonly_network
-    mac_address     = "00:50:56:a2:b1:c4"
-    nic_type        = "e1000"
-  }
+ 
   guest_startup_timeout  = 45
   guest_shutdown_timeout = 30
 }
